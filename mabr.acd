@@ -1,0 +1,29 @@
+application: mabr [
+    documentation: "Multiple Alignment Block Recognizer"
+    groups: "Alignment:Global"
+    gui: "yes"
+    batch: "yes"
+    cpu: "medium"
+]
+
+seqall: alignment [
+    parameter: "Y"
+]
+
+float: tcol [
+    minimum: "-100.0"
+    maximum: "100.0"
+    default: "0.0"
+]
+
+float: trow [
+    minimum: "-100.0"
+    maximum: "100.0"
+    default: "0.0"
+]
+
+matrixf: datafile [
+    additional: "Y"
+    information: "Matrix file"
+    protein: "$(acdprotein)"
+]
