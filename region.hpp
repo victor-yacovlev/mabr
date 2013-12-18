@@ -35,6 +35,9 @@ struct region
     inline explicit region(const ContainerType & src, size_t xs_, size_t xe_):
         ref(src), ys(0), ye(src.size()), xs(xs_), xe(xe_) {}
 
+    inline explicit region(const region & src, size_t xs_, size_t xe_):
+        ref(src.ref), ys(0), ye(src.height()), xs(xs_), xe(xe_) {}
+
     inline explicit region(const ContainerType & src):
         ref(src), ys(0), ye(src.size()), xs(0), xe(src[0].size()) {}
 

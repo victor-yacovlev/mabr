@@ -20,11 +20,10 @@ using namespace std;
 extern void initialize(
         float thereshold_column,
         float thereshold_row,
-        AjPMatrixf matrix,
-        AjPSeqall input
+        AjPMatrixf matrix
         );
 
-extern void process();
+extern void process(const alignment * al);
 
 extern void print_result(ostream & stream);
 extern void print_result_as_html(ostream & stream);

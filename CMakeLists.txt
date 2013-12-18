@@ -2,7 +2,7 @@ project(mabr)
 cmake_minimum_required(VERSION 2.8)
 
 set(SOURCES main.c mabr.cpp matrix.cpp alignment.cpp region.cpp processor.cpp block.cpp)
-set(CMAKE_CXX_FLAGS -std=c++11)
+set(CMAKE_CXX_FLAGS -std=c++03)
 
 find_library(EMBOSS_ACD NAMES acd HINTS ${EMBOSS_LIBDIR})
 find_library(EMBOSS_AJAX NAMES ajax HINTS ${EMBOSS_LIBDIR})

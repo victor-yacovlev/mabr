@@ -15,9 +15,9 @@ int main(int argc, char * argv[])
     trow        = ajAcdGetFloat("trow");
     alignment   = ajAcdGetSeqall("alignment");
 
-    mabr_initialize(tcol, trow, matrix, alignment);
+    mabr_initialize(tcol, trow, matrix);
 
-    mabr_process();
+    mabr_process(alignment);
     mabr_print_result_as_html();
 
     mabr_finalize();

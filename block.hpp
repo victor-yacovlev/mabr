@@ -13,6 +13,7 @@ class block
 {
 public:
     explicit block(const alignment & src, size_t xs_, size_t xe_);
+    explicit block(const block & src, size_t xs_, size_t xe_);
     explicit block(const alignment & src);
     explicit block(const block & other);
 

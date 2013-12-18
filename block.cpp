@@ -29,6 +29,12 @@ block::block(const alignment &src, size_t xs_, size_t xe_)
     , good_rows_(src.size(), false)
 {}
 
+block::block(const block &src, size_t xs_, size_t xe_)
+    : region<alignment,string,string,char>(src, xs_, xe_)
+    , type_(src.type_)
+    , good_rows_(src.good_rows_)
+{}
+
 block::block(const alignment &src)
     : region<alignment,string,string,char>(src)
     , type_(Minus)

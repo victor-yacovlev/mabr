@@ -1,7 +1,10 @@
 #include "matrix.hpp"
 #include <cassert>
+#include <string>
 
 namespace mabr {
+
+using namespace std;
 
 matrix::matrix(const AjPMatrixf source)
 {

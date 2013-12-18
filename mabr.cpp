@@ -2,6 +2,7 @@
 extern "C" {
 #include "mabr-c.h"
 #include <string.h>
+#include <stdlib.h>
 }
 
 #include "matrix.hpp"
@@ -14,22 +15,24 @@ namespace mabr {
 
 static processor* processor_ = 0;
 static list<void*> c_ptrs_;
+static blocktree* result_ = 0;
+static alignment* alignment_ = 0;
 
 extern void initialize(
         float thereshold_column,
         float thereshold_row,
-        AjPMatrixf matrixx,
-        AjPSeqall input
+        AjPMatrixf matrixx
         )
 {
     matrix mx = matrix(matrixx);
-    alignment al = alignment(input);
-    processor_ = new processor(al, mx, thereshold_column, thereshold_row);
+    processor_ = new processor(mx, thereshold_column, thereshold_row);
 }
 
 extern void finalize()
 {
     if (processor_) delete processor_;
+    if (result_) delete result_;
+    if (alignment_) delete alignment_;
 
     typedef list<void*>::const_iterator ptrit;
     for (ptrit it=c_ptrs_.begin(); it!=c_ptrs_.end(); ++it) {
@@ -40,21 +43,22 @@ extern void finalize()
 
 }
 
-extern void process()
+extern void process(const alignment * al)
 {
     if (!processor_) return;
 
-    processor_->run();
+    result_ = processor_->run(*al);
 }
 
 extern void print_result(ostream &stream)
 {
     if (!processor_) return;
 
-    const blocklist & res = processor_->result();
-    typedef blocklist::const_iterator cit;
+    const blocktree::list_type & res = result_->children;
+    typedef blocktree::list_type::const_iterator cit;
     for (cit it = res.begin(); it != res.end(); ++it) {
-        const block & ref = *it;
+        const blocktree * node = *it;
+        const block & ref = node->d;
         ref.print(stream);
     }
 }
@@ -96,10 +100,11 @@ extern void print_result_as_html(ostream &stream)
               "<body>" << endl;
     if (processor_) {
         stream << "<div class='data'>" << endl;
-        const blocklist & res = processor_->result();
-        typedef blocklist::const_iterator cit;
+        const blocktree::list_type & res = result_->children;
+        typedef blocktree::list_type::const_iterator cit;
         for (cit it = res.begin(); it != res.end(); ++it) {
-            const block & ref = *it;
+            const blocktree * node = *it;
+            const block & ref = node->d;
             ref.print_html(stream);
         }
         stream << "</div>" << endl;
@@ -115,15 +120,17 @@ extern void print_result_as_html(ostream &stream)
 
 extern "C" void mabr_initialize(float thereshold_column,
                                 float thereshold_row,
-                                AjPMatrixf matrix,
-                                AjPSeqall input)
+                                AjPMatrixf matrix)
 {
-    mabr::initialize(thereshold_column, thereshold_row, matrix, input);
+    mabr::initialize(thereshold_column, thereshold_row, matrix);
 }
 
 extern "C" void mabr_finalize() { mabr::finalize(); }
 
-extern "C" void mabr_process() { mabr::process(); }
+extern "C" void mabr_process(AjPSeqall input) {
+    mabr::alignment_ = new mabr::alignment(input);
+    mabr::process(mabr::alignment_);
+}
 
 extern "C" void mabr_print_result() {mabr::print_result(std::cout); }
 extern "C" void mabr_print_result_as_html() {mabr::print_result_as_html(std::cout); }

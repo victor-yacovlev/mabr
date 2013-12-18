@@ -5,31 +5,29 @@
 
 namespace mabr {
 
+static const string Alphabet(" ARNDCQEGHILKMFPSTWYVBZX");
 static const float Space_vs_Other = -4.0f;
 
-processor::processor(const alignment &al,
-                     const matrix &mx,
+processor::processor(const matrix &mx,
                      const float thereshold_column,
                      const float thereshold_row)
-    : alignment_(al)
-    , matrix_(mx)
+    : matrix_(mx)
     , thereshold_column_(thereshold_column)
     , thereshold_row_(thereshold_row)
 {
 
 }
 
-void processor::run()
-{
-    data_.clear();
-    split_into_vertical_blocks();
-    // TODO implement more
+blocktree * processor::run(const alignment & al)
+{    
+    block root_block(al);
+    blocktree * root = new blocktree(root_block);
+    split_into_vertical_blocks(root);
+    return root;
 }
 
-void processor::split_into_vertical_blocks()
+void processor::split_into_vertical_blocks(blocktree * root)
 {
-    size_t start = string::npos;
-    size_t end = string::npos;
 
     criterion current_column_criterion;
     criterion last_block_criterion;
@@ -37,8 +35,9 @@ void processor::split_into_vertical_blocks()
     deque<size_t> starts;
     deque<criterion> possible_pluses;
 
-    for (size_t i = 0u; i<alignment_.length(); i++) {
-        current_column_criterion = vertical_bound_criterion(i);
+    for (size_t i = 0u; i<root->d.width(); i++) {
+        const string column_data = root->d.get_column(i);
+        current_column_criterion = vertical_bound_criterion(column_data);
         bool border =
                 0u==i ||
                 i > 0u && current_column_criterion != last_block_criterion;
@@ -53,9 +52,9 @@ void processor::split_into_vertical_blocks()
     for (size_t i=0u; i<starts.size(); i++) {
         const size_t start = starts[i];
         const size_t end = i<starts.size()-1
-                ? starts[i+1] : alignment_.length();
+                ? starts[i+1] : root->d.width();
         current_column_criterion = possible_pluses[i];
-        block bl(alignment_, start, end);
+        block bl(root->d, start, end);
         if (bl.valid()) {
             // calculate block type
             bool has_low_score_column = GoodScore != current_column_criterion;
@@ -76,7 +75,7 @@ void processor::split_into_vertical_blocks()
             bl.set_type(bt);
 
             // push block to result
-            data_.push_back(bl);
+            root->add(bl);
         }
     }
 }
@@ -104,10 +103,8 @@ bool processor::check_for_good_rows(block &bl)
     return result;
 }
 
-processor::criterion processor::vertical_bound_criterion(size_t column_index) const
+processor::criterion processor::vertical_bound_criterion(const string & column) const
 {
-    const string column = alignment_.get_column(column_index);
-
     bool has_blank = false;
     for (size_t i=0; i<column.length(); i++) {
         const char ch = column[i];
@@ -152,8 +149,6 @@ float processor::average_pairwise_score(const string &str) const
 
 float processor::column_score(const string & str) const
 {
-    static const string Alphabet(" ARNDCQEGHILKMFPSTWYVBZX");    
-
     vector<size_t> N(Alphabet.length()+1, 0u);
     for (size_t i=0u; i<str.length(); i++) {
         char symb = str[i];
@@ -193,9 +188,8 @@ float processor::column_score(const string & str) const
     return result;
 }
 
-const blocklist & processor::result() const
-{
-    return data_;
-}
+
+
+
 
 }
