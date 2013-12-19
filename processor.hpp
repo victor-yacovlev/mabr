@@ -1,19 +1,16 @@
 #ifndef PROCESSOR_HPP
 #define PROCESSOR_HPP
 
-#include "region.hpp"
 #include "alignment.hpp"
 #include "matrix.hpp"
 #include "block.hpp"
-#include "basic_tree.hpp"
+#include "blocktree.hpp"
 
-#include <deque>
+#include <list>
 
 namespace mabr {
 
 using namespace std;
-
-typedef basic_tree<block> blocktree;
 
 class processor {
 public:
@@ -22,19 +19,21 @@ public:
                        const float thereshold_column,
                        const float thereshold_row);
 
-    blocktree * run(const alignment & al);
+    blocktree * run(const alignment * al);
 
 private:
+    
+    void run_stage(blocktree * root) const;
 
-    enum criterion { GoodScore, LowScore, Gap };
-
-    void split_into_vertical_blocks(blocktree * root);
+    list<block> split_into_vertical_blocks(const block & root) const;
+    list<block> split_into_horizontal_blocks(const block & root) const;
 
     float average_pairwise_score(const string & str) const;
     float column_score(const string & str) const;
-    criterion vertical_bound_criterion(const string & column) const;
+    float column_score_linear_time(const string & str) const;
+    float column_score_quadratic_time(const string & str) const;
 
-    bool check_for_good_rows(block & bl);
+    bool check_for_good_rows(block & bl) const;
 
     matrix matrix_;
     float thereshold_column_;

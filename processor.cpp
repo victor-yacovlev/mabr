@@ -1,12 +1,12 @@
 #include "processor.hpp"
 
-#include <ctype.h>
 #include <cassert>
+#include <stdlib.h>
+#include <deque>
 
 namespace mabr {
 
 static const string Alphabet(" ARNDCQEGHILKMFPSTWYVBZX");
-static const float Space_vs_Other = -4.0f;
 
 processor::processor(const matrix &mx,
                      const float thereshold_column,
@@ -18,49 +18,96 @@ processor::processor(const matrix &mx,
 
 }
 
-blocktree * processor::run(const alignment & al)
+blocktree * processor::run(const alignment * al)
 {    
     block root_block(al);
     blocktree * root = new blocktree(root_block);
-    split_into_vertical_blocks(root);
+    run_stage(root);
     return root;
 }
 
-void processor::split_into_vertical_blocks(blocktree * root)
+void processor::run_stage(blocktree* root) const
 {
+    // TODO implement multithreading
 
-    criterion current_column_criterion;
-    criterion last_block_criterion;
+    typedef list<blocktree*>::iterator node_it;
+    typedef list<block>::iterator block_it;
+
+    const block & root_block = root->d;
+    list<block> vertical_blocks = split_into_vertical_blocks(root_block);
+
+    if (vertical_blocks.size() > 1) {
+        root->add_all(vertical_blocks);
+        for (node_it it = root->children.begin(); it != root->children.end(); ++it)
+        {
+            blocktree * node1 = static_cast<blocktree*>(*it);
+            const block & node1_block = node1->d;
+            list<block> horizontal_blocks = split_into_horizontal_blocks(node1_block);
+            if (horizontal_blocks.size() > 1) {
+                node1->add_all(horizontal_blocks);
+                for (node_it it1 = node1->children.begin(); it1 != node1->children.end(); ++it1)
+                {
+                    blocktree * node2 = static_cast<blocktree*>(*it1);
+                    run_stage(node2);
+                }
+            }
+        }
+    }
+    else /* exact one vertical block */ {
+        const block & node1_block = root_block;
+        list<block> horizontal_blocks = split_into_horizontal_blocks(node1_block);
+        if (horizontal_blocks.size() > 1) {
+            root->add_all(horizontal_blocks);
+            for (node_it it1 = root->children.begin(); it1 != root->children.end(); ++it1)
+            {
+                blocktree * node2 = static_cast<blocktree*>(*it1);
+                run_stage(node2);
+            }
+        }
+    }
+}
+
+
+list<block> processor::split_into_vertical_blocks(const block & root) const
+{
+    list<block> result;
+
+    if (root.width() < 2) {
+        result.push_back(root);
+        return result;
+    }
+    
+    bool current_score_is_good;
+    bool last_score_is_good;
 
     deque<size_t> starts;
-    deque<criterion> possible_pluses;
+    deque<bool> possible_pluses;
 
-    for (size_t i = 0u; i<root->d.width(); i++) {
-        const string column_data = root->d.get_column(i);
-        current_column_criterion = vertical_bound_criterion(column_data);
+    for (size_t i = 0u; i<root.width(); i++) {
+        const string column_data = root.get_column(i);
+        current_score_is_good =
+                column_score(column_data) > thereshold_column_;
         bool border =
                 0u==i ||
-                i > 0u && current_column_criterion != last_block_criterion;
+                i > 0u && current_score_is_good != last_score_is_good;
 
         if (border) {
             starts.push_back(i);
-            possible_pluses.push_back(current_column_criterion);
+            possible_pluses.push_back(current_score_is_good);
         }
-        last_block_criterion = current_column_criterion;
+        last_score_is_good = current_score_is_good;
     }
 
     for (size_t i=0u; i<starts.size(); i++) {
         const size_t start = starts[i];
         const size_t end = i<starts.size()-1
-                ? starts[i+1] : root->d.width();
-        current_column_criterion = possible_pluses[i];
-        block bl(root->d, start, end);
+                ? starts[i+1] : root.width();
+        current_score_is_good = possible_pluses[i];
+        block bl(root, start, end);
         if (bl.valid()) {
             // calculate block type
-            bool has_low_score_column = GoodScore != current_column_criterion;
-            bool has_low_score_row =
-                    Gap == current_column_criterion ||
-                    ! check_for_good_rows(bl);
+            bool has_low_score_column = ! current_score_is_good;
+            bool has_low_score_row = ! check_for_good_rows(bl);
             block::type bt = block::Plus;
             if (has_low_score_column && has_low_score_row)
                 bt = block::Minus;
@@ -69,18 +116,24 @@ void processor::split_into_vertical_blocks(blocktree * root)
             else if (has_low_score_column)
                 bt = block::PlusType2;
 
-            if (Gap == current_column_criterion)
-                bt = block::Minus;
-
-            bl.set_type(bt);
+            bl.tp = bt;
 
             // push block to result
-            root->add(bl);
+            result.push_back(bl);
         }
     }
+    return result;
 }
 
-bool processor::check_for_good_rows(block &bl)
+list<block> processor::split_into_horizontal_blocks(const block& root) const
+{
+    list<block> result;
+    result.push_back(root); // TODO implement me
+    return result;
+}
+
+
+bool processor::check_for_good_rows(block &bl) const
 {
     bool result = true;
     for (size_t y=0u; y<bl.height(); y++) {
@@ -97,30 +150,12 @@ bool processor::check_for_good_rows(block &bl)
         }
         float average = score_sum / (bl.height() - 1);
         bool good_row = average > thereshold_row_;
-        bl.set_good_row(y, good_row);
+        bl.good_rows[y] = good_row;
         result = result && good_row;
     }
     return result;
 }
 
-processor::criterion processor::vertical_bound_criterion(const string & column) const
-{
-    bool has_blank = false;
-    for (size_t i=0; i<column.length(); i++) {
-        const char ch = column[i];
-        if (ch=='-' || ch=='.' || ch==' ') {
-            has_blank = true;
-            break;
-        }
-    }
-
-    if (has_blank) {
-        return Gap;
-    }
-
-    float score = column_score(column);
-    return score <= thereshold_column_ ? LowScore : GoodScore;
-}
 
 float processor::average_pairwise_score(const string &str) const
 {
@@ -132,13 +167,7 @@ float processor::average_pairwise_score(const string &str) const
                 count += 1;
                 const char a = str[i];
                 const char b = str[j];
-                float current = 0.0f;
-                if (a=='-' || b=='-' || a=='.' || b=='.' || a==' ' || b==' ') {
-                    current = Space_vs_Other;
-                }
-                else {
-                    current = matrix_.value(a, b);
-                }
+                float current = matrix_.value(a, b);
                 summ += current;
             }
         }
@@ -147,12 +176,31 @@ float processor::average_pairwise_score(const string &str) const
     return result;
 }
 
-float processor::column_score(const string & str) const
+float processor::column_score_quadratic_time(const string& str) const
+{
+    return column_score_linear_time(str); // TODO implement me
+}
+
+float processor::column_score(const string& str) const
+{
+    // There are two ways of calculate
+    if (str.length() >= 20) {
+        // complexity: O(20**2) + O(n)
+        return column_score_linear_time(str);
+    }
+    else {
+        // complexity: O(n**2)
+        return column_score_quadratic_time(str);
+    }
+}
+
+
+float processor::column_score_linear_time(const string & str) const
 {
     vector<size_t> N(Alphabet.length()+1, 0u);
     for (size_t i=0u; i<str.length(); i++) {
         char symb = str[i];
-        if ('.' == symb || '-' == symb) 
+        if ('.' == symb || '-' == symb)
             symb = ' ';
         size_t index = Alphabet.find(symb);
         assert(index != string::npos);
@@ -164,28 +212,27 @@ float processor::column_score(const string & str) const
     // TODO optimize me!
     for (size_t i=0u; i<Alphabet.length(); i++) {
         for (size_t j=i+1; j<Alphabet.length(); j++) {
-            float score = 0.0f;
-            if ( 0u == i ) {
-                score = Space_vs_Other;
-            }
-            else {
+            if (N[i] * N[j] > 0) {
                 const char a = Alphabet[i];
                 const char b = Alphabet[j];
-                score = matrix_.value(a, b);
+                float score = matrix_.value(a, b);
+                nonEqualSum += N[i] * N[j] * score;
             }
-            nonEqualSum += N[i] * N[j] * score;
         }
     }
 
     for (size_t i=1u; i<Alphabet.length(); i++) {
-        const char a = Alphabet[i];
-        const float score = matrix_.value(a, a);
-        equalSum += (N[i] * (N[i]-1) / 2) * score;
+        if (N[i] > 1) {
+            const char a = Alphabet[i];
+            const float score = matrix_.value(a, a);
+            equalSum += (N[i] * (N[i] - 1)) / 2 * score;
+        }
     }
 
     const float result = nonEqualSum + equalSum;
-
-    return result;
+    const unsigned scale = ( str.length() * (str.length() - 1) ) / 2;
+    const float normalized_result = result / scale;
+    return normalized_result;
 }
 
 

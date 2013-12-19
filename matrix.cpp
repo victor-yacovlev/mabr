@@ -11,7 +11,7 @@ matrix::matrix(const AjPMatrixf source)
     float ** sub = ajMatrixfGetMatrix(source);
     AjPSeqCvt cvt = ajMatrixfGetCvt(source);
     
-    static const string Alphabet("ARNDCQEGHILKMFPSTWYVBZX");
+    static const string Alphabet("*ARNDCQEGHILKMFPSTWYVBZX");
     
     for (size_t i=0u; i<Alphabet.length(); i++) {
         for (size_t j=0u; j<Alphabet.length(); j++) {
@@ -22,8 +22,12 @@ matrix::matrix(const AjPMatrixf source)
     }
 }
 
-float matrix::value(const char a, const char b) const
+float matrix::value(char a, char b) const
 {
+    if (' ' == a || '.' == a || '-' == a)
+        a = '*';
+    if (' ' == b || '.' == b || '-' == b)
+        b = '*';
     const sympair key = make_pair(a, b);
     float result = data_.at(key);
     return result;

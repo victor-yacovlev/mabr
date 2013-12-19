@@ -1,5 +1,6 @@
-#include "emboss.h"
 #include "mabr-c.h"
+
+#include <ajacd.h>
 
 int main(int argc, char * argv[])
 {

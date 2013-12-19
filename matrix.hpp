@@ -17,7 +17,7 @@ class matrix
 {
 public:
     explicit matrix(const AjPMatrixf source);
-    float value(const char a, const char b) const;
+    float value(char a, char b) const;
 private:    
     typedef pair<char,char> sympair;
     typedef map<sympair,float> scoremap;    

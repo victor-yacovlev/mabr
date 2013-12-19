@@ -12,10 +12,9 @@ extern void mabr_initialize(
 
 extern void mabr_process(AjPSeqall input);
 
-extern void mabr_print_result();
 extern void mabr_print_result_as_html();
 
 extern void mabr_finalize();
 
 
-#endif // MABR_H
+#endif

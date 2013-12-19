@@ -7,6 +7,7 @@ extern "C" {
 
 #include "matrix.hpp"
 #include "processor.hpp"
+#include "blocktree.hpp"
 
 #include <list>
 #include <iostream>
@@ -47,20 +48,7 @@ extern void process(const alignment * al)
 {
     if (!processor_) return;
 
-    result_ = processor_->run(*al);
-}
-
-extern void print_result(ostream &stream)
-{
-    if (!processor_) return;
-
-    const blocktree::list_type & res = result_->children;
-    typedef blocktree::list_type::const_iterator cit;
-    for (cit it = res.begin(); it != res.end(); ++it) {
-        const blocktree * node = *it;
-        const block & ref = node->d;
-        ref.print(stream);
-    }
+    result_ = processor_->run(al);
 }
 
 extern void print_result_as_html(ostream &stream)
@@ -71,21 +59,41 @@ extern void print_result_as_html(ostream &stream)
               "font-family: monospace;"
               "font-size: 12pt;"
               "}" << endl <<
-              ".region {"
+              ".tree_node {"
               "display: inline-table;"
-              "margin-top: 0.5cm;"
-              "margin-bottom: 0.5cm;"
-              "margin-left: 1pt;"
-              "margin-right: 1pt;"
+              "margin: 0;"
               "padding: 0;"
-              "border-left: 1pt solid black;"
               "}" << endl <<
-              ".region_row {"
+              ".tree_node_row {"
               "display: table-row;"
+              "margin: 0;"
+              "padding: 0;"
               "}" << endl <<
-              ".region_column {"
+              ".tree_node_column {"
+              "display: table-column;"
+              "margin: 0;"
+              "padding: 0;"
+              "}" << endl <<
+              ".tree_element {"
+              "display: table-cell;"
+              "margin: 0;"
+              "padding: 0;"
+              "}" << endl <<
+              ".block {"
+              "display: inline-table;"
+              "padding: 0;"
+              "border: 0.5pt solid black;"
+              "}" << endl <<
+              ".block_row {"
+              "display: table-row;"
+              "padding: 0;"
+              "margin: 0;"
+              "}" << endl <<
+              ".block_column {"
               "display: table-cell;"
               "text-align: center;"
+              "padding: 1pt;"
+              "margin: 0;"
               "}" << endl <<
               ".plus {"
               "background-color: lightsalmon;"
@@ -100,13 +108,7 @@ extern void print_result_as_html(ostream &stream)
               "<body>" << endl;
     if (processor_) {
         stream << "<div class='data'>" << endl;
-        const blocktree::list_type & res = result_->children;
-        typedef blocktree::list_type::const_iterator cit;
-        for (cit it = res.begin(); it != res.end(); ++it) {
-            const blocktree * node = *it;
-            const block & ref = node->d;
-            ref.print_html(stream);
-        }
+        result_->print_html(stream);
         stream << "</div>" << endl;
     }
     stream << "</body></html>" << endl;
@@ -132,5 +134,4 @@ extern "C" void mabr_process(AjPSeqall input) {
     mabr::process(mabr::alignment_);
 }
 
-extern "C" void mabr_print_result() {mabr::print_result(std::cout); }
 extern "C" void mabr_print_result_as_html() {mabr::print_result_as_html(std::cout); }
