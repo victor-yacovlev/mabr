@@ -88,8 +88,8 @@ extern void print_result_as_html(ostream &stream)
               "}" << endl <<
               ".block {"
               "display: inline-table;"
+              "border: 1pt solid darkgray;"
               "padding: 0;"
-              "border: 0.5pt solid black;"
               "}" << endl <<
               ".block_row {"
               "display: table-row;"
