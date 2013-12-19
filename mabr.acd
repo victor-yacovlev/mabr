@@ -22,6 +22,21 @@ float: trow [
     default: "0.0"
 ]
 
+int: tbcol [
+    minimum: "1"
+    default: "1"
+]
+
+int: tbrow [
+    minimum: "1"
+    default: "1"
+]
+
+int: tbsquare [
+    minimum: "1"
+    default: "6"
+]
+
 matrixf: datafile [
     additional: "Y"
     information: "Matrix file"

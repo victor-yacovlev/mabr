@@ -7,7 +7,14 @@ namespace mabr {
 
 bool block::valid() const
 {
-    return ys < ye && xs < xe;
+    bool valid_x = xs < xe;
+    bool valid_y = ys < ye;
+    bool valid_type =
+            Plus == tp ||
+            Minus == tp ||
+            PlusType1 == tp ||
+            PlusType2 == tp;
+    return valid_x && valid_y && valid_type;
 }
 
 size_t block::width() const

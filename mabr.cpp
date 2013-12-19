@@ -22,11 +22,18 @@ static alignment* alignment_ = 0;
 extern void initialize(
         float thereshold_column,
         float thereshold_row,
+        size_t thereshold_width,
+        size_t thereshold_height,
+        size_t thereshold_square,
         AjPMatrixf matrixx
         )
 {
     matrix mx = matrix(matrixx);
-    processor_ = new processor(mx, thereshold_column, thereshold_row);
+    processor_ = new processor(
+                mx, thereshold_column, thereshold_row,
+                thereshold_width, thereshold_height,
+                thereshold_square
+                );
 }
 
 extern void finalize()
@@ -122,9 +129,17 @@ extern void print_result_as_html(ostream &stream)
 
 extern "C" void mabr_initialize(float thereshold_column,
                                 float thereshold_row,
+                                size_t thereshold_width,
+                                size_t thereshold_height,
+                                size_t thereshold_square,
                                 AjPMatrixf matrix)
 {
-    mabr::initialize(thereshold_column, thereshold_row, matrix);
+    mabr::initialize(
+                thereshold_column, thereshold_row,
+                thereshold_width, thereshold_height,
+                thereshold_square,
+                matrix
+                );
 }
 
 extern "C" void mabr_finalize() { mabr::finalize(); }

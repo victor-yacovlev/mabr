@@ -34,6 +34,25 @@ void blocktree::add_all(const list<block> &data)
     }
 }
 
+bool blocktree::valid() const
+{
+#if defined(NDEBUG) || defined(NO_DEBUG) || defined(_NDEBUG) || defined(_NO_DEBUG)
+    return true;
+#else
+    if (!d.valid()) return false;
+    typedef list<blocktree*>::const_iterator node_it;
+    for (node_it it=children.begin();
+         it!=children.end();
+         ++it)
+    {
+        blocktree* child = *it;
+        if (!child->valid())
+            return false;
+    }
+    return true;
+#endif
+}
+
 void blocktree::print_html(ostream &stream) const
 {
     if (!d.valid() && children.empty()) return;

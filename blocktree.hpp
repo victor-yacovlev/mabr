@@ -16,7 +16,7 @@ public /*types*/:
     enum direction { Unimportant, Horizontal, Vertical };
 
 public /*fields*/:
-    const block & d;
+    block d;
     list<blocktree*> children;
 
 public /*constructors*/:
@@ -28,6 +28,7 @@ public /*destructor*/:
 public /*methods*/:
     void add(const block & data);
     void add_all(const list<block> & data);
+    bool valid() const; // For debug puproses only
 
     void print_html(ostream &stream) const;
     direction get_first_level_blocks_direction() const;
