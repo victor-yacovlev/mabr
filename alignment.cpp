@@ -42,5 +42,22 @@ string alignment::get_column(size_t index) const
     return result;
 }
 
+void alignment::print_xml(ostream &stream) const
+{
+    stream << "<alignment>" << endl;
+    for (size_t i=0u; i<size(); i++) {
+        stream << "<row index='" << i << "'>";
+        for (size_t j=0u; j<length(); j++) {
+            stream << "<symbol "
+                   << "row='" << i << "' "
+                   << "column='" << j << "'>";
+            stream << at(i).at(j);
+            stream << "</symbol>";
+        }
+        stream << "</row>" << endl;
+    }
+    stream << "</alignment>" << endl;
+}
+
 
 }

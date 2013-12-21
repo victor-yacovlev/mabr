@@ -7,6 +7,7 @@ extern "C" {
 
 #include <vector>
 #include <string>
+#include <ostream>
 
 namespace  mabr {
 
@@ -20,6 +21,7 @@ public:
     size_t length() const;
     string get_column(size_t index) const;
     string get_row(size_t index) const;
+    void print_xml(ostream & stream) const;
 };
 
 }

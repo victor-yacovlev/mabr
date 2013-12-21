@@ -15,7 +15,7 @@ extern void mabr_initialize(
 
 extern void mabr_process(AjPSeqall input);
 
-extern void mabr_print_result_as_html();
+extern void mabr_print_result_as_xml();
 
 extern void mabr_finalize();
 

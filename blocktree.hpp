@@ -30,7 +30,7 @@ public /*methods*/:
     void add_all(const list<block> & data);
     bool valid() const; // For debug puproses only
 
-    void print_html(ostream &stream) const;
+    void print_xml(ostream &stream) const;
     direction get_first_level_blocks_direction() const;
 
 };

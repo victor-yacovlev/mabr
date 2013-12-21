@@ -25,7 +25,7 @@ int main(int argc, char * argv[])
     mabr_initialize(tcol, trow, tbcol, tbrow, tbsquare, matrix);
 
     mabr_process(alignment);
-    mabr_print_result_as_html();
+    mabr_print_result_as_xml();
 
     mabr_finalize();
     embExit();

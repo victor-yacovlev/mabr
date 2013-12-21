@@ -40,8 +40,8 @@ private:
 
     bool check_for_good_rows(block & bl) const;
 
-    bool stop_split_into_vertical(const blocktree * node) const;
-    bool stop_split_into_horizontal(const blocktree * node) const;
+    bool should_split_into_vertical(const blocktree * node) const;
+    bool should_split_into_horizontal(const blocktree * node) const;
     bool blocktree_done(const blocktree * node) const;
     bool block_done(const block & bl) const;
     bool accept_plus_block(const block & bl) const;

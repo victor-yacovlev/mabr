@@ -5,15 +5,27 @@
 
 namespace mabr {
 
+
 bool block::valid() const
 {
     bool valid_x = xs < xe;
-    bool valid_y = ys < ye;
+    bool valid_y = false;
+    for (size_t i=0u; i<used_rows.size(); i++) {
+        if (used_rows[i]) {
+            valid_y = true;
+            break;
+        }
+    }
     bool valid_type =
             Plus == tp ||
             Minus == tp ||
             PlusType1 == tp ||
-            PlusType2 == tp;
+            PlusType2 == tp ||
+            MinusType1 == tp ||
+            MinusType2 == tp ;
+
+    if (Minus == tp || MinusType1 == tp || MinusType2 == tp)
+        valid_y = true;
     return valid_x && valid_y && valid_type;
 }
 
@@ -24,13 +36,19 @@ size_t block::width() const
 
 size_t block::height() const
 {
-    return ye - ys;
+    size_t result = 0u;
+    for (size_t i=0u; i<used_rows.size(); i++) {
+        if (used_rows[i]) {
+            result ++;
+        }
+    }
+    return result;
 }
 
 char block::get(size_t y, size_t x) const
 {
     assert(valid());
-    return ref->at(y+ys).at(x+xs);
+    return ref->at(y).at(x+xs);
 }
 
 string block::get_column(size_t index) const
@@ -55,69 +73,70 @@ string block::get_row(size_t index) const
 
 block::block(const alignment * src, size_t xs_, size_t xe_)
     : ref(src)
-    , ys(0), ye(src->size())
     , xs(xs_), xe(xe_)
-    , tp(Minus)
-    , good_rows(src->size(), false)
+    , tp(MinusType1)
+    , used_rows(src->size(), true)
 {}
 
 block::block(const block &src, size_t xs_, size_t xe_)
     : ref(src.ref)
-    , ys(0), ye(src.height())
     , xs(xs_), xe(xe_), tp(src.tp)
-    , good_rows(src.good_rows)
+    , used_rows(src.used_rows)
 {}
 
 block::block(const alignment * src)
     : ref(src)
-    , ys(0), ye(src->size())
     , xs(0), xe(src->length())
-    , tp(Minus)
-    , good_rows(src->size(), false)
+    , tp(MinusType1)
+    , used_rows(src->size(), true)
 {}
 
 block::block(const block &other)
     : ref(other.ref)
-    , ys(other.ys), ye(other.ye)
     , xs(other.xs), xe(other.xe)
     , tp(other.tp)
-    , good_rows(other.good_rows)
+    , used_rows(other.used_rows)
 {}
 
-void block::print_html(ostream &stream) const
+void block::print_xml(ostream &stream) const
 {
     if (!valid()) return;
-    string clazz = "";
+
+    string typee;
     switch (tp) {
     case Plus:
-        clazz = "plus";
+        typee = "plus";
         break;
     case PlusType1:
-        clazz = "plus1";
+        typee = "plus_type_1";
         break;
     case PlusType2:
-        clazz = "plus2";
+        typee = "plus_type_2";
         break;
     case Minus:
-        clazz = "minus";
+        typee = "minus";
+        break;
+    case MinusType1:
+        typee = "minus_type_1";
+        break;
+    case MinusType2:
+        typee = "minus_type_2";
         break;
     }
-    stream << "<div class='block " << clazz << "' ";
-    stream << "xs='" << xs << "' ";
-    stream << "xe='" << xe << "' ";
-    stream << "ys='" << ys << "' ";
-    stream << "ye='" << ye << "'>" << endl;
-    for (size_t y = ys; y<ye; y++) {
-        stream << "<div class='block_row'>";
-        for (size_t x = xs; x<xe; x++) {
-            const char elem = ref->at(y).at(x);
-            stream << "<span class='block_column'>";
-            stream << elem;
-            stream << "</span>";
+    stream << "<block "
+           << "type='" << typee << "' "
+           << "xs='" << xs << "' "
+           << "xe='" << xe << "' "
+           << "rows='";
+    bool add_space = false;
+    for (size_t i=0u; i<used_rows.size(); i++) {
+        if (used_rows[i]) {
+            if (add_space) stream << ' ';
+            add_space = true;
+            stream << i;
         }
-        stream << "</div>" << endl;
     }
-    stream << "</div>";
+    stream << "' />" << endl;
 }
 
 

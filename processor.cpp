@@ -3,6 +3,7 @@
 #include <cassert>
 #include <stdlib.h>
 #include <deque>
+#include <iostream>
 
 namespace mabr {
 
@@ -34,10 +35,14 @@ blocktree * processor::run(const alignment * al)
     return root;
 }
 
+static unsigned run_counter_ = 0;
+
 void processor::run_stage(blocktree* root) const
 {            
     assert(root->valid());
-
+    assert(block::MinusType1 == root->d.tp);
+    assert(run_counter_ < root->d.ref->length());
+    run_counter_ ++;
     typedef list<blocktree*>::iterator node_it;
     typedef list<block>::iterator block_it;
 
@@ -56,7 +61,8 @@ void processor::run_stage(blocktree* root) const
         {
             blocktree * node = *it;
             assert(node->valid());
-            if (!stop_split_into_horizontal(node)) {
+            assert(node->d.width() < root->d.width());
+            if (should_split_into_horizontal(node)) {
                 nodes_to_split_into_horizontal.push_back(node);
             }
         }
@@ -64,7 +70,7 @@ void processor::run_stage(blocktree* root) const
     else {
         root->d = vertical_blocks.front();
         assert(root->valid());
-        if (!stop_split_into_horizontal(root)) {
+        if (should_split_into_horizontal(root)) {
             nodes_to_split_into_horizontal.push_back(root);
         }
     }
@@ -86,7 +92,7 @@ void processor::run_stage(blocktree* root) const
             {
                 blocktree * node_candidate = *it;
                 assert(node_candidate->valid());
-                if (!stop_split_into_vertical(node_candidate)) {
+                if (should_split_into_vertical(node_candidate)) {
                     nodes_to_process_recursively.push_back(node_candidate);
                 }
             }
@@ -94,20 +100,20 @@ void processor::run_stage(blocktree* root) const
         else {
             node_to_horizontal_split->d = horizontal_blocks.front();
             assert(node_to_horizontal_split->valid());
-            if (!stop_split_into_vertical(node_to_horizontal_split)) {
+            if (should_split_into_vertical(node_to_horizontal_split)) {
                 nodes_to_process_recursively.push_back(node_to_horizontal_split);
             }
         }
     }
 
-    for (node_it it = nodes_to_process_recursively.begin();
-         it!=nodes_to_process_recursively.end();
-         ++it)
-    {
-        blocktree * node = *it;
-        assert(node->valid());
-        run_stage(node);
-    }
+//    for (node_it it = nodes_to_process_recursively.begin();
+//         it!=nodes_to_process_recursively.end();
+//         ++it)
+//    {
+//        blocktree * node = *it;
+//        assert(node->valid());
+//        run_stage(node);
+//    }
 
 }
 
@@ -116,14 +122,14 @@ bool processor::blocktree_done(const blocktree *node) const
     return block_done(node->d);
 }
 
-bool processor::stop_split_into_vertical(const blocktree *node) const
+bool processor::should_split_into_vertical(const blocktree *node) const
 {
-    return node->d.width() < 2 || blocktree_done(node);
+    return node->d.width() >= 2 && ! blocktree_done(node);
 }
 
-bool processor::stop_split_into_horizontal(const blocktree *node) const
+bool processor::should_split_into_horizontal(const blocktree *node) const
 {
-    return node->d.height() < 2 || blocktree_done(node);
+    return node->d.height() >= 2 && ! blocktree_done(node);
 }
 
 bool processor::block_done(const block &bl) const
@@ -186,7 +192,7 @@ list<block> processor::split_into_vertical_blocks(const block & root) const
         const size_t end = i<starts.size()-1
                 ? starts[i+1] : root.width();
         current_score_is_good = possible_pluses[i];
-        block bl(root, start, end);
+        block bl(root, root.xs + start, root.xs + end);
         if (bl.valid()) {
             // calculate block type
             bool has_low_score_column = ! current_score_is_good;
@@ -219,8 +225,8 @@ float processor::relative_row_score(const block &bl, size_t index) const
 {
     float score_sum = 0.0f;
     for (size_t x=0u; x<bl.width(); x++) {
-        for (size_t i=0u; i<bl.height(); i++) {
-            if (i != index) {
+        for (size_t i=0u; i<bl.ref->size(); i++) {
+            if (i != index && bl.used_rows[i]) {
                 const char a = bl.get(index, x);
                 const char b = bl.get(i, x);
                 float score = matrix_.value(a, b);
@@ -236,12 +242,16 @@ float processor::relative_row_score(const block &bl, size_t index) const
 bool processor::check_for_good_rows(block &bl) const
 {
     bool result = true;
-    for (size_t y=0u; y<bl.height(); y++) {
-        float score = relative_row_score(bl, y);
-        bool good_row = score > thereshold_row_;
-        bl.good_rows[y] = good_row;
-        result = result && good_row;
+    vector<bool> good(bl.ref->size(), false);
+    for (size_t y=0u; y<bl.ref->size(); y++) {
+        if (bl.used_rows[y]) {
+            float score = relative_row_score(bl, y);
+            bool good_row = score > thereshold_row_;
+            good[y] = good_row;
+            result = result && good_row;
+        }
     }
+    bl.used_rows = good;
     return result;
 }
 

@@ -10,16 +10,14 @@ namespace mabr {
 class block
 {
 public /*types*/:
-    enum type { Minus = 0x00, Plus = 0xFF, PlusType1 = 0x0F, PlusType2 = 0xF0 };
+    enum type { Minus, Plus, PlusType1, PlusType2, MinusType1, MinusType2 };
 
 public /*fields*/:
-    size_t ys;
-    size_t ye;
     size_t xs;
     size_t xe;
     const alignment * ref;
     type tp;
-    vector<bool> good_rows;
+    vector<bool> used_rows;
 
 public /*constructors*/:
     explicit block(const alignment * src, size_t xs_, size_t xe_);
@@ -39,7 +37,7 @@ public /*methods*/:
     string get_column(size_t index) const;
     string get_row(size_t index) const;
 
-    void print_html(ostream &stream) const;
+    void print_xml(ostream &stream) const;
 
 };
 

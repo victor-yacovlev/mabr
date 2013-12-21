@@ -58,67 +58,17 @@ extern void process(const alignment * al)
     result_ = processor_->run(al);
 }
 
-extern void print_result_as_html(ostream &stream)
+extern void print_result_as_xml(ostream &stream)
 {
-    stream << "<html><head><style type='text/css'>" << endl <<
-              ".data {"
-              "display: block;"
-              "font-family: monospace;"
-              "font-size: 12pt;"
-              "}" << endl <<
-              ".tree_node {"
-              "display: inline-table;"
-              "margin: 0;"
-              "padding: 0;"
-              "}" << endl <<
-              ".tree_node_row {"
-              "display: table-row;"
-              "margin: 0;"
-              "padding: 0;"
-              "}" << endl <<
-              ".tree_node_column {"
-              "display: table-column;"
-              "margin: 0;"
-              "padding: 0;"
-              "}" << endl <<
-              ".tree_element {"
-              "display: table-cell;"
-              "margin: 0;"
-              "padding: 0;"
-              "}" << endl <<
-              ".block {"
-              "display: inline-table;"
-              "border: 1pt solid darkgray;"
-              "padding: 0;"
-              "}" << endl <<
-              ".block_row {"
-              "display: table-row;"
-              "padding: 0;"
-              "margin: 0;"
-              "}" << endl <<
-              ".block_column {"
-              "display: table-cell;"
-              "text-align: center;"
-              "padding: 1pt;"
-              "margin: 0;"
-              "}" << endl <<
-              ".plus {"
-              "background-color: lightsalmon;"
-              "}" << endl <<
-              ".plus1 {"
-              "background-color: lightblue;"
-              "}" << endl <<
-              ".plus2 {"
-              "background-color: lightgreen;"
-              "}" << endl <<
-              "</style></head>"
-              "<body>" << endl;
+    stream << "<?xml version='1.0' encoding='ASCII'?>" << endl;
+    stream << "<mabr>" << endl;
+    stream << "<decomposition>" << endl;
     if (processor_) {
-        stream << "<div class='data'>" << endl;
-        result_->print_html(stream);
-        stream << "</div>" << endl;
+        result_->print_xml(stream);
     }
-    stream << "</body></html>" << endl;
+    stream << "</decomposition>" << endl;
+    alignment_->print_xml(stream);
+    stream << "</mabr>" << endl;
 }
 
 
@@ -149,4 +99,4 @@ extern "C" void mabr_process(AjPSeqall input) {
     mabr::process(mabr::alignment_);
 }
 
-extern "C" void mabr_print_result_as_html() {mabr::print_result_as_html(std::cout); }
+extern "C" void mabr_print_result_as_xml() {mabr::print_result_as_xml(std::cout); }

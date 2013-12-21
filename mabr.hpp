@@ -27,7 +27,7 @@ extern void initialize(
 
 extern void process(const alignment * al);
 
-extern void print_result_as_html(ostream & stream);
+extern void print_result_as_xml(ostream & stream);
 
 extern void finalize();
 

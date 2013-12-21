@@ -53,34 +53,26 @@ bool blocktree::valid() const
 #endif
 }
 
-void blocktree::print_html(ostream &stream) const
+void blocktree::print_xml(ostream &stream) const
 {
     if (!d.valid() && children.empty()) return;
 
     typedef list<blocktree*>::const_iterator node_it;
 
     if (children.size() > 1) {
-        stream << "<div class='tree_node'>";
-        const string clazz =
-                get_first_level_blocks_direction() == Horizontal
-                ? string("tree_node_row")
-                : string("tree_node_column");
-        stream << "<div class='" << clazz << "'>";
+        stream << "<group>" << endl;
         for (node_it it=children.begin(); it!=children.end(); ++it) {
-            stream << "<div class='tree_element'>";
-            blocktree * elem = *it;
-            elem->print_html(stream);
-            stream << "</div>";
+            blocktree * node = *it;
+            node->print_xml(stream);
         }
-        stream << "</div>";
-        stream << "</div>";
+        stream << "</group>" << endl;
     }
     else if (children.size() == 1) {
         blocktree * elem = children.front();
-        elem->print_html(stream);
+        elem->print_xml(stream);
     }
     else {
-        d.print_html(stream);
+        d.print_xml(stream);
     }
 }
 
@@ -95,9 +87,6 @@ blocktree::direction blocktree::get_first_level_blocks_direction() const
             result = Vertical;
         }
         else {
-            // assumes the same Y-coordinates
-            assert(first.ys == last.ys);
-            assert(first.ye == last.ye);
             result = Horizontal;
         }
     }
