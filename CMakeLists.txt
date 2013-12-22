@@ -9,6 +9,8 @@ set(SOURCES
     processor.cpp
     block.cpp
     blocktree.cpp
+    linear_processor.cpp
+    amino_group.cpp
 )
 
 set(CMAKE_C_FLAGS "-ansi -Wreturn-type")

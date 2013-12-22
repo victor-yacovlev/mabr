@@ -9,11 +9,14 @@ extern "C" {
 #include "processor.hpp"
 #include "blocktree.hpp"
 
+#include "linear_processor.hpp"
+
 #include <list>
 #include <iostream>
 
 namespace mabr {
 
+static linear_processor* linear_processor_ = 0;
 static processor* processor_ = 0;
 static list<void*> c_ptrs_;
 static blocktree* result_ = 0;
@@ -34,6 +37,7 @@ extern void initialize(
                 thereshold_width, thereshold_height,
                 thereshold_square
                 );
+    linear_processor_ = new linear_processor;
 }
 
 extern void finalize()
