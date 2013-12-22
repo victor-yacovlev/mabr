@@ -5,9 +5,9 @@
 
 namespace mabr {
 
-
 bool block::valid() const
 {
+    if (!ref) return false;
     bool valid_x = xs < xe;
     bool valid_y = false;
     for (size_t i=0u; i<used_rows.size(); i++) {

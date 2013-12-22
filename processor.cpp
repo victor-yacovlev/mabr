@@ -31,7 +31,8 @@ blocktree * processor::run(const alignment * al)
 {    
     block root_block(al);
     blocktree * root = new blocktree(root_block);
-    run_stage(root);
+//    run_stage(root);
+    process_block(root);
     return root;
 }
 
@@ -154,7 +155,130 @@ bool processor::accept_minus_block(const block &bl) const
     bool height_reached = bl.height() <= thereshold_height_;
     size_t square = bl.width() * bl.height();
     bool square_reached = square <= thereshold_square_;
-    return width_reached || height_reached || square_reached;
+    bool min_reached = width_reached || height_reached || square_reached;
+    return ! min_reached;
+}
+
+list<block> processor::split_into_plus_and_minus_type_1_blocks(const block &bl) const
+{
+    block plus(bl);
+    block minus_type_1(bl);
+
+    for (size_t y=0u; y<bl.ref->size(); y++) {
+        if (bl.used_rows[y]) {
+            float row_score = relative_row_score(bl, y);
+            if (row_score > thereshold_row_) {
+                plus.used_rows[y] = true;
+                minus_type_1.used_rows[y] = false;
+            }
+            else {
+                plus.used_rows[y] = false;
+                minus_type_1.used_rows[y] = true;
+            }
+        }
+    }
+
+    list<block> result;
+    if (plus.height() > 0u) {
+        plus.tp = block::Plus;
+        result.push_back(plus);
+    }
+    if (minus_type_1.height() > 0u) {
+        if (accept_minus_block(minus_type_1)) {
+            minus_type_1.tp = block::MinusType1;
+            result.push_back(minus_type_1);
+        }
+    }
+    return result;
+}
+
+static unsigned recursive_process_block_calls_ = 0u;
+
+void processor::process_block(blocktree *root_node) const
+{
+    unsigned max_calls =
+            root_node->d.ref->length() * root_node->d.ref->size();
+    assert(recursive_process_block_calls_ < max_calls);
+    recursive_process_block_calls_ ++;
+    assert(root_node->valid());
+    const block & root = root_node->d;
+    assert(root.tp == block::MinusType1 ||
+           root.tp == block::MinusType2);
+
+    if (root.tp == block::MinusType1) {
+        process_minus_type_1_block(root_node);
+    }
+    else if (root.tp == block::MinusType2) {
+        process_minus_type_2_block(root_node);
+    }
+
+
+    for (node_iterator it=root_node->children.begin();
+         it!=root_node->children.end();
+         ++it)
+    {
+        blocktree* child_node = *it;
+        if (child_node->d.tp != block::Plus) {
+            process_block(child_node);
+        }
+    }
+
+}
+
+void processor::process_minus_type_1_block(blocktree * root_node) const
+{
+    assert(root_node->valid());
+    const block & root = root_node->d;
+    assert(block::MinusType1 == root.tp);
+
+    bool current_column_is_conservative;
+    bool last_column_is_conservative;
+
+    deque<size_t> starts;
+    deque<bool> conservative;
+
+    for (size_t i = 0u; i<root.width(); i++) {
+        const string column_data = root.get_column(i);
+        current_column_is_conservative =
+                column_score(column_data) > thereshold_column_;
+        bool border =
+                0u==i ||
+                i > 0u && current_column_is_conservative != last_column_is_conservative;
+
+        if (border) {
+            starts.push_back(i);
+            conservative.push_back(current_column_is_conservative);
+        }
+        last_column_is_conservative = current_column_is_conservative;
+    }
+
+    for (size_t i=0u; i<starts.size(); i++) {
+        const size_t start = starts[i];
+        const size_t end = i<starts.size()-1
+                ? starts[i+1] : root.width();
+        current_column_is_conservative = conservative[i];
+        block bl(root, root.xs + start, root.xs + end);
+        assert(bl.valid());
+        if (! current_column_is_conservative) {
+            if (accept_minus_block(bl)) {
+                bl.tp = block::MinusType2;
+                root_node->add(bl);
+            }
+        }
+        else {
+            if (accept_plus_block(bl)) {
+                list<block> group = split_into_plus_and_minus_type_1_blocks(bl);
+                assert(group.size() == 1 || group.size() == 2);
+                root_node->add_all(group);
+            }
+        }
+
+    }
+}
+
+void processor::process_minus_type_2_block(blocktree *root_node) const
+{
+    root_node->d.tp = block::Plus;
 }
 
 list<block> processor::split_into_vertical_blocks(const block & root) const

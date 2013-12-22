@@ -26,8 +26,17 @@ public:
     blocktree * run(const alignment * al);
 
 private:
+
+    typedef list<blocktree*>::iterator node_iterator;
     
     void run_stage(blocktree * root) const;
+
+    void process_block(blocktree * root_node) const;
+    void process_minus_type_1_block(blocktree * root_node) const;
+    void process_minus_type_2_block(blocktree * root_node) const;
+
+
+    list<block> split_into_plus_and_minus_type_1_blocks(const block & bl) const;
 
     list<block> split_into_vertical_blocks(const block & root) const;
     list<block> split_into_horizontal_blocks(const block & root) const;
