@@ -243,7 +243,7 @@ void processor::process_minus_type_1_block(blocktree * root_node) const
                 column_score(column_data) > thereshold_column_;
         bool border =
                 0u==i ||
-                i > 0u && current_column_is_conservative != last_column_is_conservative;
+                (i > 0u && current_column_is_conservative != last_column_is_conservative);
 
         if (border) {
             starts.push_back(i);
@@ -302,7 +302,7 @@ list<block> processor::split_into_vertical_blocks(const block & root) const
                 column_score(column_data) > thereshold_column_;
         bool border =
                 0u==i ||
-                i > 0u && current_score_is_good != last_score_is_good;
+                (i > 0u && current_score_is_good != last_score_is_good);
 
         if (border) {
             starts.push_back(i);

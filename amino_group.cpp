@@ -20,6 +20,29 @@ mask::operator bool ()
     return false;
 }
 
+mask mask::operator &(const mask & other) const
+{
+    assert(size() == other.size());
+    mask result(size());
+    for (size_t i=0u; i<size(); i++) {
+        result[i] = (*this)[i] && other[i];
+    }
+    return result;
+}
+
+bool mask::operator !=(const mask & other) const
+{
+    assert(size() == other.size());
+    for (size_t i=0u; i<size(); i++) {
+        const bool a = (*this)[i] > 0u;
+        const bool b = other[i] > 0u;
+        if (a != b) {
+            return true;
+        }
+    }
+    return false;
+}
+
 amino_group::amino_group(const string &s, float f, float R_)
     : aminos(&s), probability(f), R(R_)
 {

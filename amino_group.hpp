@@ -4,6 +4,7 @@
 #include <string>
 #include <valarray>
 #include <vector>
+#include <utility>
 
 namespace mabr {
 
@@ -15,6 +16,8 @@ class mask
 public:
     explicit mask(size_t sz);
     operator bool();
+    mask operator &(const mask & other) const;
+    bool operator != (const mask & other) const;
 };
 
 class amino_group {
