@@ -1,5 +1,5 @@
 project(mabr)
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 
 set(SOURCES
     main.c
@@ -14,7 +14,7 @@ set(SOURCES
 )
 
 set(CMAKE_C_FLAGS "-ansi -Wreturn-type")
-set(CMAKE_CXX_FLAGS "-std=c++03 -Wreturn-type")
+set(CMAKE_CXX_FLAGS "-std=c++11 -Wreturn-type")
 
 find_library(EMBOSS_ACD NAMES acd HINTS ${EMBOSS_LIBDIR})
 find_library(EMBOSS_AJAX NAMES ajax HINTS ${EMBOSS_LIBDIR})
@@ -43,6 +43,7 @@ set(EMBOSS_LIBS
 find_path(EMBOSS_INCLUDE_DIR emboss.h HINTS ${EMBOSS_INCLUDEDIR} PATH_SUFFIXES EMBOSS)
 find_path(EMBOSS_PCRE_INCLUDE_DIR pcre_config.h HINTS ${EMBOSS_INCLUDEDIR} PATH_SUFFIXES EMBOSS/epcre)
 find_path(EMBOSS_PLPLOT_INCLUDE_DIR plplot.h HINTS ${EMBOSS_INCLUDEDIR} PATH_SUFFIXES EMBOSS/eplplot)
+
 
 include_directories(${EMBOSS_INCLUDE_DIR})
 include_directories(${EMBOSS_PCRE_INCLUDE_DIR})
