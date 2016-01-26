@@ -1,12 +1,16 @@
 #include "processor.hpp"
 
 #include <cassert>
-#include <stdlib.h>
+#include <cstdlib>
 #include <deque>
 #include <iostream>
 
 namespace mabr {
 
+using std::deque;
+using std::list;
+using std::string;
+using std::vector;
 
 static const string Alphabet(" ARNDCQEGHILKMFPSTWYVBZX");
 
@@ -44,11 +48,10 @@ void processor::run_stage(blocktree* root) const
     assert(block::MinusType1 == root->d.tp);
     assert(run_counter_ < root->d.ref->length());
     run_counter_ ++;
-    typedef list<blocktree*>::iterator node_it;
-    typedef list<block>::iterator block_it;
+    using block_it = block_list::iterator;
 
     block & root_block = root->d;
-    list<block> vertical_blocks = split_into_vertical_blocks(root_block);
+    block_list vertical_blocks = split_into_vertical_blocks(root_block);
     assert(! vertical_blocks.empty());
 
     list<blocktree*> nodes_to_split_into_horizontal;
@@ -56,7 +59,7 @@ void processor::run_stage(blocktree* root) const
 
     if (vertical_blocks.size() > 1) {
         root->add_all(vertical_blocks);
-        for (node_it it = root->children.begin();
+        for (auto it = root->children.begin();
              it != root->children.end();
              ++it)
         {
@@ -76,18 +79,18 @@ void processor::run_stage(blocktree* root) const
         }
     }
 
-    for (node_it it = nodes_to_split_into_horizontal.begin();
+    for (auto it = nodes_to_split_into_horizontal.begin();
          it != nodes_to_split_into_horizontal.end();
          ++it)
     {
         blocktree* node_to_horizontal_split = *it;
         block & block_to_horizontal_split = node_to_horizontal_split->d;
-        list<block> horizontal_blocks =
+        block_list horizontal_blocks =
                 split_into_horizontal_blocks(block_to_horizontal_split);
         assert(! horizontal_blocks.empty());
         if (horizontal_blocks.size() > 1) {
             node_to_horizontal_split->add_all(horizontal_blocks);
-            for (node_it chk=node_to_horizontal_split->children.begin();
+            for (auto chk=node_to_horizontal_split->children.begin();
                  chk!=node_to_horizontal_split->children.end();
                  ++chk)
             {
@@ -159,7 +162,7 @@ bool processor::accept_minus_block(const block &bl) const
     return ! min_reached;
 }
 
-list<block> processor::split_into_plus_and_minus_type_1_blocks(const block &bl) const
+processor::block_list processor::split_into_plus_and_minus_type_1_blocks(const block &bl) const
 {
     block plus(bl);
     block minus_type_1(bl);
@@ -178,7 +181,7 @@ list<block> processor::split_into_plus_and_minus_type_1_blocks(const block &bl) 
         }
     }
 
-    list<block> result;
+    block_list result;
     if (plus.height() > 0u) {
         plus.tp = block::Plus;
         result.push_back(plus);
@@ -267,7 +270,7 @@ void processor::process_minus_type_1_block(blocktree * root_node) const
         }
         else {
             if (accept_plus_block(bl)) {
-                list<block> group = split_into_plus_and_minus_type_1_blocks(bl);
+                block_list group = split_into_plus_and_minus_type_1_blocks(bl);
                 assert(group.size() == 1 || group.size() == 2);
                 root_node->add_all(group);
             }
@@ -281,9 +284,9 @@ void processor::process_minus_type_2_block(blocktree *root_node) const
     root_node->d.tp = block::Plus;
 }
 
-list<block> processor::split_into_vertical_blocks(const block & root) const
+processor::block_list processor::split_into_vertical_blocks(const block & root) const
 {
-    list<block> result;
+    block_list result;
 
     if (root.width() < 2) {
         result.push_back(root);
@@ -338,9 +341,9 @@ list<block> processor::split_into_vertical_blocks(const block & root) const
     return result;
 }
 
-list<block> processor::split_into_horizontal_blocks(const block& root) const
+processor::block_list processor::split_into_horizontal_blocks(const block& root) const
 {
-    list<block> result;
+    block_list result;
     result.push_back(root); // TODO implement me
     return result;
 }

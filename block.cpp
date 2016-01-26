@@ -5,6 +5,10 @@
 
 namespace mabr {
 
+using std::string;
+using std::ostream;
+using std::endl;
+
 bool block::valid() const
 {
     if (!ref) return false;

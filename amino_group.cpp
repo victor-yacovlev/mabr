@@ -1,12 +1,15 @@
 #include "amino_group.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <algorithm>
 
 namespace mabr {
 
-mask::mask(size_t sz): valarray<unsigned>(0u, sz) {}
+using std::string;
+using std::vector;
+
+mask::mask(size_t sz): valarray<uint32_t>(0u, sz) {}
 
 mask::operator bool ()
 {

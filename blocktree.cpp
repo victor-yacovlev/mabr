@@ -4,6 +4,10 @@
 
 namespace mabr {
 
+using std::list;
+using std::ostream;
+using std::endl;
+
 blocktree::blocktree(const block &src)
     : d(src)
 {}

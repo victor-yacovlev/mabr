@@ -1,3 +1,4 @@
+#pragma once
 #ifndef ALIGNMENT_HPP
 #define ALIGNMENT_HPP
 extern "C" {
@@ -5,23 +6,20 @@ extern "C" {
 #include <ajseq.h>
 }
 
-#include <vector>
-#include <string>
 #include <ostream>
+#include <string>
+#include <vector>
 
 namespace  mabr {
 
-using namespace std;
-
-class alignment
-        : public vector<string>
+struct alignment
+        : public std::vector<std::string>
 {
-public:
     explicit alignment(AjPSeqall source);
     size_t length() const;
-    string get_column(size_t index) const;
-    string get_row(size_t index) const;
-    void print_xml(ostream & stream) const;
+    std::string get_column(size_t index) const;
+    std::string get_row(size_t index) const;
+    void print_xml(std::ostream & stream) const;
 };
 
 }

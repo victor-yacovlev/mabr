@@ -1,3 +1,4 @@
+#pragma once
 #ifndef PROCESSOR_HPP
 #define PROCESSOR_HPP
 
@@ -9,8 +10,6 @@
 #include <list>
 
 namespace mabr {
-
-using namespace std;
 
 class processor {
 public:
@@ -27,7 +26,8 @@ public:
 
 private:
 
-    typedef list<blocktree*>::iterator node_iterator;
+    using node_iterator = std::list<blocktree*>::iterator;
+    using block_list = std::list<block>;
     
     void run_stage(blocktree * root) const;
 
@@ -36,15 +36,15 @@ private:
     void process_minus_type_2_block(blocktree * root_node) const;
 
 
-    list<block> split_into_plus_and_minus_type_1_blocks(const block & bl) const;
+    block_list split_into_plus_and_minus_type_1_blocks(const block & bl) const;
 
-    list<block> split_into_vertical_blocks(const block & root) const;
-    list<block> split_into_horizontal_blocks(const block & root) const;
+    block_list split_into_vertical_blocks(const block & root) const;
+    block_list split_into_horizontal_blocks(const block & root) const;
 
-    float average_pairwise_score(const string & str) const;
-    float column_score(const string & str) const;
-    float column_score_linear_time(const string & str) const;
-    float column_score_quadratic_time(const string & str) const;
+    float average_pairwise_score(const std::string & str) const;
+    float column_score(const std::string & str) const;
+    float column_score_linear_time(const std::string & str) const;
+    float column_score_quadratic_time(const std::string & str) const;
     float relative_row_score(const block & bl, size_t index) const;
 
     bool check_for_good_rows(block & bl) const;

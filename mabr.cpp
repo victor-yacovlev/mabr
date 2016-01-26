@@ -11,16 +11,20 @@ extern "C" {
 
 #include "linear_processor.hpp"
 
-#include <list>
 #include <iostream>
+#include <list>
 
 namespace mabr {
 
-static linear_processor* linear_processor_ = 0;
-static processor* processor_ = 0;
-static list<void*> c_ptrs_;
-static blocktree* result_ = 0;
-static alignment* alignment_ = 0;
+using std::list;
+using std::string;
+using std::endl;
+
+static linear_processor* _linear_processor = nullptr;
+static processor* _processor = nullptr;
+static std::list<void*> _c_ptrs;
+static blocktree* _result = nullptr;
+static alignment* _alignment = nullptr;
 
 extern void initialize(
         float thereshold_column,
@@ -32,46 +36,47 @@ extern void initialize(
         )
 {
     matrix mx = matrix(matrixx);
-    processor_ = new processor(
+    _processor = new processor(
                 mx, thereshold_column, thereshold_row,
                 thereshold_width, thereshold_height,
                 thereshold_square
                 );
-    linear_processor_ = new linear_processor;
+    _linear_processor = new linear_processor;
 }
 
 extern void finalize()
 {
-    if (processor_) delete processor_;
-    if (result_) delete result_;
-    if (alignment_) delete alignment_;
+    if (_processor) delete _processor;
+    if (_result) delete _result;
+    if (_alignment) delete _alignment;
 
-    typedef list<void*>::const_iterator ptrit;
-    for (ptrit it=c_ptrs_.begin(); it!=c_ptrs_.end(); ++it) {
+    using ptrit = std::list<void*>::const_iterator;
+
+    for (ptrit it=_c_ptrs.begin(); it!=_c_ptrs.end(); ++it) {
         void * ptr = *it;
         if (ptr) free(ptr);
     }
-    c_ptrs_.clear();
+    _c_ptrs.clear();
 
 }
 
 extern void process(const alignment * al)
 {
-    if (!processor_) return;
+    if (!_processor) return;
 
-    result_ = processor_->run(al);
+    _result = _processor->run(al);
 }
 
-extern void print_result_as_xml(ostream &stream)
+extern void print_result_as_xml(std::ostream &stream)
 {
     stream << "<?xml version='1.0' encoding='ASCII'?>" << endl;
     stream << "<mabr>" << endl;
     stream << "<decomposition>" << endl;
-    if (processor_) {
-        result_->print_xml(stream);
+    if (_processor) {
+        _result->print_xml(stream);
     }
     stream << "</decomposition>" << endl;
-    alignment_->print_xml(stream);
+    _alignment->print_xml(stream);
     stream << "</mabr>" << endl;
 }
 
@@ -99,8 +104,8 @@ extern "C" void mabr_initialize(float thereshold_column,
 extern "C" void mabr_finalize() { mabr::finalize(); }
 
 extern "C" void mabr_process(AjPSeqall input) {
-    mabr::alignment_ = new mabr::alignment(input);
-    mabr::process(mabr::alignment_);
+    mabr::_alignment = new mabr::alignment(input);
+    mabr::process(mabr::_alignment);
 }
 
 extern "C" void mabr_print_result_as_xml() {mabr::print_result_as_xml(std::cout); }

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef BLOCKTREE_HPP
 #define BLOCKTREE_HPP
 
@@ -8,31 +9,23 @@
 
 namespace mabr {
 
-using namespace std;
-
-class blocktree
+struct blocktree
 {
-public /*types*/:
     enum direction { Unimportant, Horizontal, Vertical };
 
-public /*fields*/:
     block d;
-    list<blocktree*> children;
+    std::list<blocktree*> children;
 
-public /*constructors*/:
     explicit blocktree(const block & src);
 
-public /*destructor*/:
     ~blocktree();
 
-public /*methods*/:
     void add(const block & data);
-    void add_all(const list<block> & data);
+    void add_all(const std::list<block> & data);
     bool valid() const; // For debug puproses only
 
-    void print_xml(ostream &stream) const;
+    void print_xml(std::ostream &stream) const;
     direction get_first_level_blocks_direction() const;
-
 };
 
 }

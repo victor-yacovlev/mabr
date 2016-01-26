@@ -1,3 +1,4 @@
+#pragma once
 #ifndef LINEAR_PROCESSOR_HPP
 #define LINEAR_PROCESSOR_HPP
 
@@ -6,15 +7,12 @@
 
 #include <list>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 namespace mabr {
 
-using namespace std;
-
-typedef list<block> block_list;
-
+using block_list = std::list<block>;
 
 class linear_processor {
 public:
@@ -23,30 +21,31 @@ public:
     block_list run(const block & root) const;
 
 private:
-    typedef pair<const amino_group*, mask> group_mask;
-    typedef vector<amino_group>::const_iterator group_iterator;
-    typedef list<group_mask> group_list;
+    using group_mask = std::pair<const amino_group*, mask>;
+    using group_iterator = std::vector<amino_group>::const_iterator;
+    using group_list = std::list<group_mask>;
 
     struct opened_block {
         size_t  start;
         mask    fence;
-        string  consensus;
+        std::string  consensus;
 
-        inline opened_block(const size_t start_, const mask &fence_, const string &consensus_)
+        inline opened_block(const size_t start_, const mask &fence_, const std::string &consensus_)
             : start(start_), fence(fence_), consensus(consensus_) {}
     };
-    typedef list<opened_block> oblock_list;
-    typedef oblock_list::iterator obl_it;
+
+    using oblock_list = std::list<opened_block>;
+    using obl_it = oblock_list::iterator;
 
     void process_column(const size_t index,
-                        const string & column,
+                        const std::string & column,
                         oblock_list & blocks,
                         block_list & result_blocks,
                         const block & parent_block
                         ) const;
 
     void process_column_for_block(const size_t index,
-                                  const string & column,
+                                  const std::string & column,
                                   const opened_block & cblock,
                                   oblock_list & blocks,
                                   block_list & result_blocks,
@@ -55,15 +54,15 @@ private:
 
     void open_new_block(const size_t start,
                         const mask & fence,
-                        const string & consensus,
+                        const std::string & consensus,
                         oblock_list & blocks) const;
 
 
 
-    group_list find_all_groups(const string & column) const;
-    group_mask find_most_significant_group(const string & column) const;
+    group_list find_all_groups(const std::string & column) const;
+    group_mask find_most_significant_group(const std::string & column) const;
 
-    vector<amino_group> amino_groups_;
+    std::vector<amino_group> _amino_groups;
 };
 
 }

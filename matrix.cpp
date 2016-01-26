@@ -17,7 +17,7 @@ matrix::matrix(const AjPMatrixf source)
         for (size_t j=0u; j<Alphabet.length(); j++) {
             const sympair key = make_pair(Alphabet[i], Alphabet[j]);
             const float value = sub[ajSeqcvtGetCodeK(cvt, Alphabet[i])][ajSeqcvtGetCodeK(cvt, Alphabet[j])];
-            data_[key] = value;
+            _data[key] = value;
         }
     }
 }
@@ -29,7 +29,7 @@ float matrix::value(char a, char b) const
     if (' ' == b || '.' == b || '-' == b)
         b = '*';
     const sympair key = make_pair(a, b);
-    float result = data_.at(key);
+    float result = _data.at(key);
     return result;
 }
 

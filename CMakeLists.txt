@@ -14,7 +14,7 @@ set(SOURCES
 )
 
 set(CMAKE_C_FLAGS "-ansi -Wreturn-type")
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wreturn-type")
+set(CMAKE_CXX_FLAGS "-std=c++0x -Wreturn-type")
 if(NOT WIN32)
     set(CMAKE_INSTALL_PREFIX "/usr")
 endif()

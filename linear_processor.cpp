@@ -2,8 +2,12 @@
 
 namespace mabr {
 
+using std::string;
+using std::list;
+
+
 linear_processor::linear_processor(float R)
-    : amino_groups_(amino_group_factory::create(R))
+    : _amino_groups(amino_group_factory::create(R))
 {
 
 }
@@ -74,7 +78,7 @@ void linear_processor::open_new_block(
 linear_processor::group_list linear_processor::find_all_groups(const string &column) const
 {
     group_list result;
-    for (group_iterator it=amino_groups_.begin(); it!=amino_groups_.end(); ++it) {
+    for (group_iterator it=_amino_groups.begin(); it!=_amino_groups.end(); ++it) {
         const amino_group & group = *it;
         mask m = group.meaningful_for(column);
         if (m) {

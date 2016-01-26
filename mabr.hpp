@@ -1,3 +1,4 @@
+#pragma once
 #ifndef MABR_HPP
 #define MABR_HPP
 
@@ -14,8 +15,6 @@ extern "C" {
 
 namespace mabr {
 
-using namespace std;
-
 extern void initialize(
         float thereshold_column,
         float thereshold_row,
@@ -27,7 +26,7 @@ extern void initialize(
 
 extern void process(const alignment * al);
 
-extern void print_result_as_xml(ostream & stream);
+extern void print_result_as_xml(std::ostream & stream);
 
 extern void finalize();
 

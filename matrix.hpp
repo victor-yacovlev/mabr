@@ -1,3 +1,4 @@
+#pragma once
 #ifndef MABR_MATRIX_HPP
 #define MABR_MATRIX_HPP
 
@@ -6,22 +7,21 @@ extern "C" {
 #include <ajstr.h>
 }
 
-#include <utility>
 #include <map>
+#include <utility>
 
 namespace mabr {
 
-    using namespace std;
-    
 class matrix
 {
 public:
     explicit matrix(const AjPMatrixf source);
     float value(char a, char b) const;
 private:    
-    typedef pair<char,char> sympair;
-    typedef map<sympair,float> scoremap;    
-    scoremap data_;
+    using sympair = std::pair<char,char>;
+    using scoremap = std::map<sympair,float>;
+
+    scoremap _data;
 };
 
 } // namespace mabr
