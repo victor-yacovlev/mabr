@@ -15,6 +15,10 @@ set(SOURCES
 
 set(CMAKE_C_FLAGS "-ansi -Wreturn-type")
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wreturn-type")
+if(NOT WIN32)
+    set(CMAKE_INSTALL_PREFIX "/usr")
+endif()
+
 
 find_library(EMBOSS_ACD NAMES acd HINTS ${EMBOSS_LIBDIR})
 find_library(EMBOSS_AJAX NAMES ajax HINTS ${EMBOSS_LIBDIR})
@@ -42,13 +46,16 @@ set(EMBOSS_LIBS
 
 find_path(EMBOSS_INCLUDE_DIR emboss.h HINTS ${EMBOSS_INCLUDEDIR} PATH_SUFFIXES EMBOSS)
 find_path(EMBOSS_PCRE_INCLUDE_DIR pcre_config.h HINTS ${EMBOSS_INCLUDEDIR} PATH_SUFFIXES EMBOSS/epcre)
-find_path(EMBOSS_PLPLOT_INCLUDE_DIR plplot.h HINTS ${EMBOSS_INCLUDEDIR} PATH_SUFFIXES EMBOSS/eplplot)
+find_path(EMBOSS_PLPLOT_INCLUDE_DR plplot.h HINTS ${EMBOSS_INCLUDEDIR} PATH_SUFFIXES EMBOSS/eplplot)
+
 
 
 include_directories(${EMBOSS_INCLUDE_DIR})
 include_directories(${EMBOSS_PCRE_INCLUDE_DIR})
 include_directories(${EMBOSS_PLPLOT_INCLUDE_DIR})
 
-
 add_executable(mabr ${SOURCES})
 target_link_libraries(mabr ${EMBOSS_LIBS})
+
+install(TARGETS mabr RUNTIME DESTINATION bin)
+install(FILES mabr.acd DESTINATION share/EMBOSS/acd)
